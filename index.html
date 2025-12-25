@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="sq">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="theme-color" content="#111111" />
+<title>Evidenca – Janar 2026</title>
+
+<link rel="manifest" href="manifest.webmanifest" />
+
+<style>
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin:0; background:#f6f7f9; }
+header { background:#111; color:#fff; padding:12px; }
+header h1 { margin:0; font-size:16px; }
+table { width:100%; border-collapse:collapse; background:#fff; }
+th, td { border:1px solid #ddd; padding:6px; font-size:13px; }
+th { background:#eee; }
+tr.weekend { background:#ffecec; }
+input, select { width:100%; }
+button { padding:10px; margin:5px; }
+</style>
+</head>
+
+<body>
+<header>
+<h1>Evidenca mujore – Janar 2026</h1>
+<button onclick="save()">Ruaj</button>
+<button onclick="exportCSV()">Export CSV</button>
+</header>
+
+<table>
+<thead>
+<tr>
+<th>Data</th>
+<th>Status</th>
+<th>Pozita</th>
+<th>Njësia</th>
+<th>Raste</th>
+<th>Shënime</th>
+<th>Raporte</th>
+<th>Tiketa</th>
+<th>Info</th>
+</tr>
+</thead>
+<tbody id="body"></tbody>
+</table>
+
+<script>
+const KEY = "evidenca_janar_2026";
+
+function isWeekend(d){
+return d.getDay() === 0 || d.getDay() === 6;
+}
+
+function load(){
+const saved = localStorage.getItem(KEY);
+if(saved) return JSON.parse(saved);
+
+let data = [];
+for(let i=1;i<=31;i++){
+let d = new Date(2026,0,i);
+data.push({
+date: d.toISOString().slice(0,10),
+status: isWeekend(d) ? "Pushim" : "Pune",
+pozita:"",
+njesia:"",
+raste:0, shenime:0, raporte:0, tiketa:0, info:0
+});
+}
+return data;
+}
+
+let data = load();
+const tbody = document.getElementById("body");
+
+function render(){
+tbody.innerHTML="";
+data.forEach((r,i)=>{
+const tr=document.createElement("tr");
+if(r.status==="Pushim") tr.className="weekend";
+tr.innerHTML=`
+<td>${r.date}</td>
+<td>
+<select onchange="data[${i}].status=this.value">
+<option ${r.status==="Pune"?"selected":""}>Pune</option>
+<option ${r.status==="Pushim"?"selected":""}>Pushim</option>
+</select>
+</td>
+<td><input value="${r.pozita}" onchange="data[${i}].pozita=this.value"></td>
+<td><input value="${r.njesia}" onchange="data[${i}].njesia=this.value"></td>
+<td><input type="number" value="${r.raste}" onchange="data[${i}].raste=this.value"></td>
+<td><input type="number" value="${r.shenime}" onchange="data[${i}].shenime=this.value"></td>
+<td><input type="number" value="${r.raporte}" onchange="data[${i}].raporte=this.value"></td>
+<td><input type="number" value="${r.tiketa}" onchange="data[${i}].tiketa=this.value"></td>
+<td><input type="number" value="${r.info}" onchange="data[${i}].info=this.value"></td>
+`;
+tbody.appendChild(tr);
+});
+}
+
+function save(){
+localStorage.setItem(KEY, JSON.stringify(data));
+alert("U ruajt");
+}
+
+function exportCSV(){
+let csv="Data,Status,Pozita,Njesia,Raste,Shenime,Raporte,Tiketa,Info\n";
+data.forEach(r=>{
+csv+=`${r.date},${r.status},${r.pozita},${r.njesia},${r.raste},${r.shenime},${r.raporte},${r.tiketa},${r.info}\n`;
+});
+const blob=new Blob([csv],{type:"text/csv"});
+const a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="Evidenca_Janar_2026.csv";
+a.click();
+}
+
+render();
+</script>
+</body>
+</html>
